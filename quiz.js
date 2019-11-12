@@ -20,7 +20,13 @@ fetch("question.json")
     })
     .then(loadedQuestions =>{
         console.log(loadedQuestions);
+        questions = loadedQuestions;
+        startGame();
     });
+    .catch(err =>{
+        console.error(err);
+    });
+
 
 // Constants
 const CORRECT_BONUS =10;
@@ -44,7 +50,7 @@ getNewQuestion = () => {
         localStorage.setItem("mostRecentScore", score);
 
         //go to the end page 
-        return window.location.assign("/end.html");
+        return window.location.assign("end.html");
     }
 
     questionCounter++;
