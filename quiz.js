@@ -1,116 +1,125 @@
 const question = document.getElementById("question");
 const choices = Array.from(document.getElementsByClassName("choice-text"));
 const progressText = document.getElementById('progressText');
-const scoreText = document.getElementById('score');
-const progressBarFull = document.getElementById('progressBarFull');
-
-console.log(choices);
+const scoreText = document.getElementById("score");
+const progressBarFull = document.getElementById("progressBarFull");
 
 let currentQuestion = {};
-let acceptingAnswers = false;
-let score = 0;//score starts at zero
-let questionCounter = 0;//what question r u on
-let availableQuestions = [];
+let acceptingAnswers = true;
+let score = 0;
+let questionCounter = 0;
+let availableQuesions = [];
 
-let questions = [];
-fetch("question.json")
-    .then(res => {
-        console.log(res);
-        return res.json();
-    })
-    .then(loadedQuestions =>{
-        console.log(loadedQuestions);
-        questions = loadedQuestions;
-        startGame();
-    });
-    .catch(err =>{
-        console.error(err);
-    });
+let questions = [
+    {
+        "question": "Inside which HTML element do we put the JavaScript??",
+        "choice1": "<script>",
+        "choice2": "<javascript>",
+        "choice3": "<js>",
+        "choice4": "<scripting>",
+        "answer": 1
+    },
+    {
+        "question": "What is the correct syntax for referring to an external script called 'xxx.js'?",
+        "choice1": "<script href='xxx.js'>",
+        "choice2": "<script name='xxx.js'>",
+        "choice3": "<script src='xxx.js'>",
+        "choice4": "<script file='xxx.js'>",
+        "answer": 3
+    },
+    {
+        "question": " How do you write 'Hello World' in an alert box?",
+        "choice1": "msgBox('Hello World');",
+        "choice2": "alertBox('Hello World');",
+        "choice3": "msg('Hello World');",
+        "choice4": "alert('Hello World');",
+        "answer": 4
+    },
+    {
+        "question": "Where is the correct place to insert a JavaScript?",
+        "choice1": "The <body> section;",
+        "choice2": "Both the <head> section and the <body> section are correct;",
+        "choice3": "The <head> section;",
+        "choice4": "None of the above",
+        "answer": 2
+    },
+    {
+        "question": "How do you write 'Hello World' in an alert box?",
+        "choice1": "msg('Hello World')",
+        "choice2": "alert('Hello World')",
+        "choice3": "msgBox('Hello World')",
+        "choice4": "alertBox('Hello World')",
+        "answer": 2
+    }
+];
 
+//CONSTANTS
+const CORRECT_BONUS = 10;
+const MAX_QUESTIONS = 5;
 
-// Constants
-const CORRECT_BONUS =10;
-const MAX_QUESTIONS =3;
-
-startGame = () =>{
-    questionCounter = 0;//make sure start at 0
+startGame = () => {
+    questionCounter = 0;
     score = 0;
-
-    //copy in all the questions from the questions array
-    //put it in availableQuestions array
-    //take this array spread out each of its items and
-    //put them into a new array
-    availableQuestions = [...questions];
-    //console.log(availableQuestions);
-
+    availableQuesions = [...questions];
+    //   console.log(availableQuesions);
     getNewQuestion();
 };
+
 getNewQuestion = () => {
-    if(availableQuestions.length === 0 || questionCounter >=MAX_QUESTIONS){
+    if (availableQuesions.length === 0 || questionCounter >= MAX_QUESTIONS) {
         localStorage.setItem("mostRecentScore", score);
 
-        //go to the end page 
-        return window.location.assign("end.html");
+        //go to the end page
+        return window.location.assign("./end.html");
     }
-
     questionCounter++;
-    // progessText.innerText = questionCounter + "/" + MAX_QUESTIONS;
-    //progressText.innerText = 'Question ${questionCounter}/${MAX_QUESTIONS}';
-
-
-    //questionCounterText.innerText = "${questionCounter}/${MAX_QUESTIONS}";
-    progressText.innerText = "Question" + questionCounter + "/" + MAX_QUESTIONS;
+    progressText.innerText = ` Question ${questionCounter}/${MAX_QUESTIONS}`;
 
     //Update the progress bar
-    progressBarFull.style.width = '${(questionCounter / MAX_QUESTIONS) * 100)}%';
+    //console.log((questionCounter/MAX_QUESTIONS) * 100);
+    progressBarFull.style.width = `${(questionCounter / MAX_QUESTIONS) * 100}%`;
 
-
-    //Math.random() => will give a decimal number between 0 and 1
-    const questionIndex = Math.floor(Math.random() * availableQuestions.length);
-    currentQuestion = availableQuestions[questionIndex];
+    const questionIndex = Math.floor(Math.random() * availableQuesions.length);
+    currentQuestion = availableQuesions[questionIndex];
     question.innerText = currentQuestion.question;
 
     choices.forEach(choice => {
-        const number = choice.dataset['number'];
-        choice.innerText = currentQuestion['choice' + number];
+        const number = choice.dataset["number"];
+        choice.innerText = currentQuestion["choice" + number];
     });
-    availableQuestions.splice(questionIndex, 1);
-    console.log(availableQuestions);
+
+    availableQuesions.splice(questionIndex, 1);
     acceptingAnswers = true;
 };
+
 choices.forEach(choice => {
-    choice.addEventListener('click', e => {
-        //console.log(e.target);
-        if(!acceptingAnswers)return;
+    choice.addEventListener("click", e => {
+        if (!acceptingAnswers) return;
 
         acceptingAnswers = false;
         const selectedChoice = e.target;
         const selectedAnswer = selectedChoice.dataset["number"];
+        // console.log(selectedAnswer == currentQuestion.answer);
 
-        // const classToApply = 'incorrect';
-        //     if(selectedAnswer == currentQuestion.answer){
-        //         classToApply = 'correct';
-        //     }
+        const classToApply =
+            selectedAnswer == currentQuestion.answer ? 'correct' : 'incorrect';
+        // console.log(classToApply)
 
-        const classToApply = selectedAnswer == currentQuestion.answer? 'correct' : 'incorrect';
-        if(classToApply === 'correct'){
+        if (classToApply === "correct") {
             incrementScore(CORRECT_BONUS);
         }
 
-        // console.log(selectedAnswer == currentQuestion.answer);
-        console.log(classToApply);
-
         selectedChoice.parentElement.classList.add(classToApply);
-        setTimeout(() =>{
+        setTimeout(() => {
             selectedChoice.parentElement.classList.remove(classToApply);
             getNewQuestion();
-        }, 1000);
+        }, 1000);//wait for 1000 miliseconds(1second)
     });
 });
-    incrementScore = num => {
-        score += num;
-        scoreText.innerText = score;
-    }
+
+incrementScore = num => {
+    score += num;
+    scoreText.innerText = score;
+};
+
 startGame();
-
-
